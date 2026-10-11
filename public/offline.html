@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#275544" />
+    <meta name="allting-offline" content="v1" />
+    <title>AllTing — utan anslutning</title>
+    <script>
+      (() => {
+        let c = "";
+        try {
+          const a = document.cookie
+            .split(";")
+            .map((x) => x.trim())
+            .filter((x) => x.startsWith("allting-consent="));
+          if (a.length === 1) {
+            const v = a[0].slice(16),
+              m = /^1\.(\d{13})\.([01])\.([01])$/.exec(v);
+            if (
+              m &&
+              +m[1] <= Date.now() + 300000 &&
+              Date.now() - +m[1] < 15552000000
+            )
+              c = v;
+          }
+        } catch {}
+        document.documentElement.dataset.consent = c;
+        let p = "light";
+        try {
+          if (c.split(".")[2] === "1") {
+            const v = localStorage.getItem("allting-appearance");
+            if (v === "light" || v === "dark" || v === "system") p = v;
+          }
+        } catch {}
+        const d =
+          p === "dark" ||
+          (p === "system" &&
+            matchMedia("(prefers-color-scheme: dark)").matches);
+        document.documentElement.dataset.appearance = p;
+        document.documentElement.dataset.theme = d ? "dark" : "light";
+        const m = document.querySelector('meta[name="theme-color"]');
+        if (m) m.content = d ? "#171d19" : "#275544";
+      })();
+    </script>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #242b26;
+        --paper: #faf9f6;
+      }
+      :root[data-theme="dark"] {
+        color-scheme: dark;
+        --ink: #edf0eb;
+        --paper: #171d19;
+      }
+      body {
+        font: 17px system-ui;
+        color: var(--ink);
+        background: var(--paper);
+        padding: 32px;
+        max-width: 480px;
+        margin: 12vh auto;
+      }
+      a {
+        color: inherit;
+      }
+      h1 {
+        font-size: 32px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>AllTing</h1>
+    <h2>Du är utan anslutning</h2>
+    <p>Anslut till internet för att se dina saker och meddelanden.</p>
+    <a href="/">Försök igen</a>
+  </body>
+</html>

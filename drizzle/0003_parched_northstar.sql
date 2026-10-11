@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX `allting_auth_account_provider_subject` ON `allting_auth_account` (`provider_id`,`account_id`);

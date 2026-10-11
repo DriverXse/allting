@@ -1,0 +1,14 @@
+import { readFileSync } from "node:fs";
+const config = JSON.parse(readFileSync("wrangler.json", "utf8"));
+const db = config.d1_databases?.find(x => x.binding === "DB");
+const bucket = config.r2_buckets?.find(x => x.binding === "BUCKET");
+const origin = new URL(config.vars?.ALLTING_ORIGIN || "https://example.invalid");
+if (!/^[a-z0-9][a-z0-9-]*$/.test(config.name || "")) throw new Error("Set a valid Worker name in wrangler.json.");
+if (!db || !/^[0-9a-f-]{36}$/i.test(db.database_id) || db.database_id === "00000000-0000-4000-8000-000000000000") throw new Error("Create your own D1 database and set its database_id in wrangler.json.");
+if (db.database_name !== "allting") throw new Error("Keep database_name=allting, or also update the npm migration commands.");
+if (!bucket?.bucket_name) throw new Error("Create your own R2 bucket and set its name in wrangler.json.");
+if (origin.protocol !== "https:" || /(?:^|\.)(?:localhost|invalid|test)$/.test(origin.hostname) || origin.pathname !== "/" || origin.search || origin.hash || origin.username || origin.password) throw new Error("Set ALLTING_ORIGIN to your exact production HTTPS origin, without a path or credentials.");
+if (!["password", "magic-link"].includes(config.vars?.ALLTING_AUTH_METHOD)) throw new Error("Choose password or magic-link authentication explicitly.");
+if (config.vars.ALLTING_AUTH_METHOD === "password" && !config.vars.FIREBASE_PROJECT_ID?.trim()) throw new Error("Set your own FIREBASE_PROJECT_ID.");
+if (config.vars.FIREBASE_AUTH_EMULATOR) throw new Error("Never configure an authentication emulator in production.");
+console.log("Production resource configuration passed. Host secrets must be configured separately; this check cannot read them.");
